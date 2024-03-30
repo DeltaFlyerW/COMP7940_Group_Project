@@ -9,10 +9,27 @@ from pony.converting import str2datetime
 from pony.orm import *
 import pony.options
 
-
 pony.options.CUT_TRACEBACK = False
 pony.MODE = 'INTERACTIVE'
 db = Database()
 
-class TelegramUser:
-    uid = Required(int)
+
+class TelegramChat(db.Entity):
+    chat_id = Required(int)
+
+    user_message_list = Set("ChatMessage")
+    bot_message_list = Set("ChatMessage")
+
+
+class ChatMessage(db.Entity):
+    sender = Required(str)
+    chat = Required(TelegramChat)
+    create_timestamp = Required(int)
+
+    images = Set("UserImage")
+    content = Optional(str, 4000)
+
+
+class ChatImage(db.Entity):
+    message = Required(ChatMessage)
+    path = Required(str)
