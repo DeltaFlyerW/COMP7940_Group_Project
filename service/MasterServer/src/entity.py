@@ -22,33 +22,25 @@ db = Database()
 class TelegramChat(db.Entity):
     chat_id = Required(int)
 
-    user_message_list = Set("UserMessage")
-    bot_message_list = Set("BotMessage")
+    messages = Set("TelegramMessage")
 
 
-class UserMessage(db.Entity):
+class TelegramMessage(db.Entity):
+    sender = Required(str)
     chat = Required(TelegramChat)
-    create_timestamp = Required(int)
-    images = Set("UserImage")
+    type = Required(str)
+    create_timestamp = Required(float)
+
+    images = Set('TelegramImage')
     content = Optional(str, 4000)
 
 
-class UserImage(db.Entity):
-    message = Required(UserMessage)
+
+class TelegramImage(db.Entity):
+    message = Required(TelegramMessage)
     path = Required(str)
 
 
-class BotMessage(db.Entity):
-    chat = Required(TelegramChat)
-    create_timestamp = Required(int)
-
-    images = Set("BotImage")
-    content = Optional(str, 4000)
-
-
-class BotImage(db.Entity):
-    message = Required(BotMessage)
-    path = Required(str)
 
 
 def initDatabase():
