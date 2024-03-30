@@ -1,14 +1,17 @@
 # coding=utf-8
+import asyncio
 import logging
 import os
 import sys
 
+import websockets
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters
 
 from src.handle import chatHistory, commandHandle
 from src.handle.chatHistory import historyWrapper
 from src.util import configManager
+from src.util.websocketServer import websocketHandler
 from util.projectRoot import projectRoot
 
 sys.path.append(projectRoot)
@@ -28,7 +31,7 @@ logger = logging.getLogger(__name__)
 # context.
 
 
-def main() -> None:
+def initApplication():
     """Start the bot."""
 
     # Read the token from local config file
@@ -38,7 +41,7 @@ def main() -> None:
     # Redis database
 
     # Create the Application and pass it your bot's token.
-    application = Application.builder().token(tel_access_token).build()
+    application = Application.builder().token(tel_access_token).concurrent_updates(True).build()
 
     # on different commands - answer in Telegram
     commandHandle.CommandManager.registerAll(application.add_handler)
@@ -50,8 +53,29 @@ def main() -> None:
 
     # Run the bot until the user presses Ctrl-C
     logging.info("Press Ctrl + C to stop the program")
-    application.run_polling(allowed_updates=Update.ALL_TYPES)
+    return application
+
+
+async def main():
+    application = initApplication()
+
+    await application.initialize()
+    await application.start()
+    websocket_server = await websockets.serve(websocketHandler, "localhost", 8000)
+
+    # Start other asyncio frameworks here
+    # Add some logic that keeps the event loop running until you want to shutdown
+    # Stop the other asyncio frameworks here
+    await application.updater.start_polling()
+    try:
+        while True:
+            await asyncio.sleep(1000)
+    finally:
+        websocket_server.close()
+        await application.updater.stop()
+        await application.stop()
+        await application.shutdown()
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

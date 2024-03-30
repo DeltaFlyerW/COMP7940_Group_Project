@@ -1,2 +1,5 @@
 pony
 python-telegram-bot
+fastapi
+httpx
+uvicorn

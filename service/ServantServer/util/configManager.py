@@ -63,25 +63,6 @@ class ChatbotConfig(BaseConfig):
     accessToken: str = ''
 
 
-@_initConfig
-@dataclass
-class TelegramConfig(BaseConfig):
-    _configPath = "config/telegram.ini"
-    _section = 'TELEGRAM'
-
-    accessToken: str = ''
 
 
-@_initConfig
-@dataclass
-class DatabaseConfig(BaseConfig):
-    _configPath = "config/database.ini"
-    _section = 'SQLITE'
 
-    provider: str = ''
-    filename: str = ''
-    host: str = ''
-    port: int = 0
-    user: str = ''
-    password: str = ''
-    db: str = ''
