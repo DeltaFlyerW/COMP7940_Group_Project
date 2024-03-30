@@ -11,9 +11,7 @@ from pony.converting import str2datetime
 from pony.orm import *
 import pony.options
 
-from util.projectRoot import projectRoot
 
-sys.path.append(projectRoot)
 pony.options.CUT_TRACEBACK = False
 pony.MODE = 'INTERACTIVE'
 db = Database()
