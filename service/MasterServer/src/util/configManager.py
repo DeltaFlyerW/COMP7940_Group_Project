@@ -17,7 +17,6 @@ class BaseConfig:
 
     @classmethod
     def load_config_from_path(cls):
-        print(cls, cls._configPath)
         cls._parser = configparser.ConfigParser()
         cls._parser.read((projectRoot / cls._configPath))
 
@@ -70,7 +69,7 @@ class TelegramConfig(BaseConfig):
     _configPath = "config/telegram.ini"
     _section = 'TELEGRAM'
 
-    access_token: str
+    accessToken: str
 
 
 @_initConfig
@@ -88,5 +87,3 @@ class DatabaseConfig(BaseConfig):
     db: str
 
 
-if __name__ == '__main__':
-    print(DatabaseConfig.toDict())

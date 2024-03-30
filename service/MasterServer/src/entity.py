@@ -11,6 +11,7 @@ from pony.converting import str2datetime
 from pony.orm import *
 import pony.options
 
+from src.util.projectRoot import projectRoot
 
 pony.options.CUT_TRACEBACK = False
 pony.MODE = 'INTERACTIVE'
@@ -25,20 +26,22 @@ class TelegramChat(db.Entity):
 
 class TelegramMessage(db.Entity):
     sender = Required(str)
+    message_id = Optional(int)
     chat = Required(TelegramChat)
     type = Required(str)
     create_timestamp = Required(float)
 
-    images = Set('TelegramImage')
     content = Optional(str, 4000)
 
 
+class MessageType:
+    text = "text"
+    photo = "photo"
 
-class TelegramImage(db.Entity):
-    message = Required(TelegramMessage)
-    path = Required(str)
 
-
+class MessageSender:
+    bot = 'bot'
+    user = 'user'
 
 
 def initDatabase():
@@ -53,3 +56,34 @@ def initDatabase():
 
 
 initDatabase()
+
+
+class ChatHistoryManager:
+    @classmethod
+    @db_session
+    def getTextHistory(cls, chatId, messageId) -> list[TelegramMessage]:
+        chat = TelegramChat.get(chat_id=chatId)
+        if not chat:
+            chat = TelegramChat(chat_id=chatId)
+            db.commit()
+        result = chat.messages.select(lambda m: m.type == MessageType.text and m.message_id != messageId)
+        return list(result)
+
+    @classmethod
+    @db_session
+    def addHistory(cls, chatId, sender, timestamp: float, messageId=None, messageContent=None, ):
+        chat = TelegramChat.get(chat_id=chatId)
+        if not chat:
+            chat = TelegramChat(chat_id=chatId)
+
+        message = TelegramMessage(
+            message_id=messageId,
+            content=messageContent,
+            chat=chat,
+            type=MessageType.text,
+            sender=sender,
+            create_timestamp=timestamp
+        )
+
+        db.commit()
+        return message.id
