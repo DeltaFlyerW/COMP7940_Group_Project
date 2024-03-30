@@ -43,6 +43,31 @@ class ChatGPTClient:
         await self.client.aclose()
 
 
+import re
+
+
+def escape_special_chars(your_string):
+    # Define a function that will be used as the replacement function
+    def repl(match):
+        # If the match group 1 (http pattern) is not None, return it as is
+        if match.group(1):
+            return match.group(1)
+        # Otherwise, escape the matched character
+        else:
+            return '\\' + match.group(0)
+
+    # Pattern explanation (simplified version for demonstration):
+    # - The part before the '|' attempts to capture a pattern that looks like a URL starting with 'http'
+    # - The part after the '|' attempts to match various special characters
+    # Note: This pattern is a simplified assumption of the intention behind the provided JavaScript regex.
+    pattern = r'(http[^()\s]+)|([\[\]()~>#+=|{}.!-])'
+
+    # Perform the replacement
+    result = re.sub(pattern, repl, your_string, flags=re.IGNORECASE)
+
+    return result
+
+
 async def chatgpt_handle(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Enable the chatbot using chatgpt provided by HKBU"""
     chadId = update.effective_chat.id
@@ -86,7 +111,7 @@ async def chatgpt_handle(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         if len(history) > 3:
             break
 
-    history.append({"role": "system", "content": "You are a helpful assistant. Reply in markdown format if needed."}, )
+    history.append({"role": "system", "content": "You are a rude yet helpful assistant. Reply in markdown format if needed."}, )
     history.reverse()
     reply_msg = await ChatGPTClient.get().chat(history)  # Send the text to ChatGPT
     logging.info("[ChatGPT] Conversation:  %s", history)
@@ -97,4 +122,6 @@ async def chatgpt_handle(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     logi(entityId)
     logging.info("[ChatGPT] Reply: %s", reply_msg)
 
-    await context.bot.send_message(chat_id=update.effective_chat.id, text=reply_msg)
+    await context.bot.send_message(chat_id=update.effective_chat.id,
+                                   text=escape_special_chars(reply_msg),
+                                   parse_mode='MarkdownV2')
