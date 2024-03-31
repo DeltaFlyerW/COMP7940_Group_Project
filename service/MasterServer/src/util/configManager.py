@@ -1,8 +1,7 @@
+import os
 import configparser
 from dataclasses import dataclass, fields
-
 from src.util.projectRoot import projectRoot
-
 
 @dataclass
 class BaseConfig:
@@ -18,7 +17,12 @@ class BaseConfig:
     @classmethod
     def load_config_from_path(cls):
         cls._parser = configparser.ConfigParser()
-        cls._parser.read((projectRoot / cls._configPath))
+
+        if os.environ.get("CURRENT_RUN_MODE") == "docker":
+            conf = os.environ["CONFIG_FILE"]
+            cls._parser.read(conf)
+        else:
+            cls._parser.read((projectRoot / cls._configPath))
 
         fieldMap = {}
         for field in fields(cls):

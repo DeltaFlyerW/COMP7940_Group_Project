@@ -41,8 +41,6 @@ def initApplication():
 
     tel_access_token = configManager.TelegramConfig.accessToken
 
-    # Redis database
-
     # Create the Application and pass it your bot's token.
     application = Application.builder().token(tel_access_token).concurrent_updates(True).build()
 
@@ -60,11 +58,13 @@ def initApplication():
 
 
 async def main():
+
+    logging.info("Application initialization")
     application = initApplication()
 
     await application.initialize()
     await application.start()
-    websocket_server = await websockets.serve(websocketHandler, "localhost", 8000)
+    websocket_server = await websockets.serve(websocketHandler, "127.0.0.1", 8000)
 
     # Start other asyncio frameworks here
     # Add some logic that keeps the event loop running until you want to shutdown

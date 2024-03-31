@@ -1,6 +1,6 @@
+import logging
 from telegram import Update, ForceReply
 from telegram.ext import ContextTypes, CommandHandler
-
 import src.handle.chatGptHKBU
 from src.handle.chatHistory import historyWrapper
 
@@ -48,4 +48,4 @@ class CommandManager:
             callback(CommandHandler(command.__name__, command))
 
 
-print(CommandManager().getHelpMessage())
+logging.info(CommandManager().getHelpMessage())
