@@ -6,18 +6,12 @@ import httpx
 from telegram import Update
 from telegram.ext import ContextTypes
 
-try:
-    from ..constant import CommandType
-    from ..entity import ChatHistoryManager, MessageType, MessageSender
-    from ..handle.chatHistory import historyWrapper
-    from ..util.configManager import ChatbotConfig
-    from ..util.loggingHelper import logi
-except:
-    from src.constant import CommandType
-    from src.entity import ChatHistoryManager, MessageType, MessageSender
-    from src.handle.chatHistory import historyWrapper
-    from src.util.configManager import ChatbotConfig
-    from src.util.loggingHelper import logi
+from src.constant import CommandType
+from src.entity import ChatHistoryManager, MessageType, MessageSender
+from src.handle.chatHistory import historyWrapper
+from src.util.configManager import ChatbotConfig
+from src.util.loggingHelper import logi
+from src.util.websocketServer import ClientManager, WebsocketEvent
 
 
 class ChatGPTClient:
@@ -48,6 +42,22 @@ class ChatGPTClient:
 
     async def close(self):
         await self.client.aclose()
+
+
+class ChatGPTDispatchClient:
+    @classmethod
+    def get(cls):
+        return cls
+
+    @classmethod
+    async def chat(cls, conversation):
+        result = await ClientManager.dispatch(
+            role="chatbot",
+            event=WebsocketEvent.DispatchJob("userChat", {'conversation': conversation}
+                                             )
+        )
+        logi(result)
+        return result['result']
 
 
 import re
@@ -121,7 +131,7 @@ async def chatgpt_handle(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     history.append({"role": "system", "content": "You are a rude yet helpful assistant."
                                                  " Reply in markdown format if needed."}, )
     history.reverse()
-    reply_msg = await ChatGPTClient.get().chat(history)  # Send the text to ChatGPT
+    reply_msg = await ChatGPTDispatchClient.get().chat(history)  # Send the text to ChatGPT
     logging.info("[ChatGPT] Conversation:  %s", history)
     entityId = ChatHistoryManager.addHistory(
         chatId=chadId, sender=MessageSender.bot, timestamp=time.time(), messageContent=reply_msg,

@@ -17,7 +17,7 @@ class ServantClient:
     ws: WebSocketServerProtocol
     roles: list[str]
 
-    jobs: dict[float, Callable]
+    jobs: dict[float, dict]
 
 
 class BaseWebsocketEvent:
@@ -45,6 +45,11 @@ class WebsocketEvent:
     class Error(BaseWebsocketEvent):
         message: str
 
+    @dataclass
+    class DispatchJob(BaseWebsocketEvent):
+        type: str
+        data: dict
+
 
 class ClientManager:
     roleDict: dict[str, list[ServantClient]] = defaultdict(list)
@@ -52,11 +57,12 @@ class ClientManager:
 
     @classmethod
     async def register(cls, websocket: WebSocketServerProtocol, roles: list[str]):
-        client = ServantClient(websocket, roles, [])
+        client = ServantClient(websocket, roles, {})
         logi(roles, message="Servant registered", )
         cls.clients[websocket] = client
         for role in client.roles:
             cls.roleDict[role].append(client)
+
         return client
 
     @classmethod
@@ -69,15 +75,21 @@ class ClientManager:
             cls.clients.pop(websocket)
 
     @classmethod
-    async def dispatch(cls, role: str, event: BaseWebsocketEvent, callback):
+    async def dispatch(cls, role: str, event: WebsocketEvent.DispatchJob):
         if len(cls.roleDict[role]) == 0:
             logi("No available role", role)
             return WebsocketEvent.Error.decode({"message": "No available role for " + role})
         client = min(cls.roleDict[role], key=lambda x: len(x.jobs))
         timestamp = time.time()
         event.timestamp = timestamp
-        client.jobs[timestamp] = callback
+
+        client.jobs[timestamp] = None
         await client.ws.send(event.dump())
+        while client.jobs[timestamp] is None:
+            await asyncio.sleep(0.1)
+
+        response = client.jobs.pop(timestamp)
+        return response
 
 
 # create handler for each connection
@@ -91,7 +103,7 @@ async def websocketHandler(websocket: WebSocketServerProtocol, path):
         async for message in websocket:
             body = json.loads(message)
             if 'timestamp' in body:
-                client.jobs[body['timestamp']](body)
+                client.jobs[body['timestamp']] = body
     except Exception as e:
         logi(f"An error occurred: {e}")
     finally:

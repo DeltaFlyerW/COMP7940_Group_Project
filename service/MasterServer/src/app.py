@@ -1,6 +1,7 @@
 # coding=utf-8
 import asyncio
 import logging
+
 # Enable logging
 logging.basicConfig(format='%(asctime)s %(levelname)s - %(message)s',
                     level=logging.INFO)
@@ -13,21 +14,20 @@ logger = logging.getLogger(__name__)
 import sys
 
 import websockets
-from telegram.ext import Application, CommandHandler, MessageHandler, filters
-
+from telegram.ext import Application, MessageHandler, filters
 
 from util.projectRoot import projectRoot
+
 sys.path.append(str(projectRoot))
 
+from telegram import Bot, BotCommand
 
-from handle import chatHistory, commandHandle
-from handle.chatHistory import historyWrapper
-from util import configManager
-from util.websocketServer import websocketHandler
+from src.handle import commandHandle
+from src.handle.chatHistory import historyWrapper
+from src.util import configManager
+from src.util.websocketServer import websocketHandler
 
-from handle.chatGptHKBU import chatgpt_handle
-
-
+from src.handle.chatGptHKBU import chatgpt_handle
 
 
 # Define a few command handlers. These usually take the two arguments update and
@@ -50,25 +50,29 @@ def initApplication():
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND,
                                            historyWrapper(chatgpt_handle)))
 
+    bot = Bot(token=tel_access_token, )
+
     # We use chatgpt for test this time
 
     # Run the bot until the user presses Ctrl-C
     logging.info("Press Ctrl + C to stop the program")
-    return application
+    return application, bot
 
 
 async def main():
-
     logging.info("Application initialization")
-    application = initApplication()
+    application, bot = initApplication()
 
     await application.initialize()
     await application.start()
+    await bot.set_my_commands(commandHandle.CommandManager.getCommandList())
+
     websocket_server = await websockets.serve(websocketHandler, "127.0.0.1", 8000)
 
     # Start other asyncio frameworks here
     # Add some logic that keeps the event loop running until you want to shutdown
     # Stop the other asyncio frameworks here
+
     await application.updater.start_polling()
     try:
         while True:
