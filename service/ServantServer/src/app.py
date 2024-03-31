@@ -2,16 +2,20 @@ import asyncio
 import base64
 import sys
 import time
+import logging
 
+# Enable logging
+logging.basicConfig(format='%(asctime)s %(levelname)s - %(message)s',
+                    level=logging.INFO)
 import httpx
 import websockets
 import json
 
-from src.util.loggingHelper import logi
+
 from util.projectRoot import projectRoot
 
 sys.path = [projectRoot.__str__()] + sys.path
-
+from src.util.loggingHelper import logi
 from util.configManager import MasterConfig, DiffusionConfig
 
 

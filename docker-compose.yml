@@ -8,6 +8,8 @@ name: chatbot
 secrets:
   conf:
     file: ./secrets/config.ini
+  servant_conf:
+    file: ./secrets/servant_conf.ini
 
 
 services:
@@ -16,7 +18,8 @@ services:
   master_server:
     build: ./service/MasterServer
     environment:
-      - CURRENT_RUN_MODE=docker    # In our program, we use this varibale to indicate if we're in container env or not
+    # In our program, we use this varibale to indicate if we're in container env or not
+      - CURRENT_RUN_MODE=docker    
       - CONFIG_FILE=/run/secrets/conf
     ports:
       - "8000:8000" # port forward, 8000 -> 8000
@@ -24,4 +27,13 @@ services:
     secrets:
       - conf
 
-
+  servent_server:
+    build: ./service/ServantServer
+    environment:
+      - CURRENT_RUN_MODE=docker
+      - CONFIG_FILE=/run/secrets/servant_conf
+    
+    secrets:
+      - servant_conf
+    depends_on:
+      - master_server
