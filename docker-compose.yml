@@ -4,19 +4,22 @@ version: '3.9'
 
 name: chatbot
 
+# We use secret here
 secrets:
   conf:
     file: ./secrets/config.ini
 
 
 services:
+# This is the main service we provide
+# The chatbot service
   master_server:
     build: ./service/MasterServer
     environment:
-      - CURRENT_RUN_MODE=docker
+      - CURRENT_RUN_MODE=docker    # In our program, we use this varibale to indicate if we're in container env or not
       - CONFIG_FILE=/run/secrets/conf
     ports:
-      - "8000:8000"
+      - "8000:8000" # port forward, 8000 -> 8000
 
     secrets:
       - conf
