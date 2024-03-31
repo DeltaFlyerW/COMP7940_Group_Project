@@ -1,7 +1,7 @@
-from src.util.projectRoot import projectRoot
-
-from dataclasses import dataclass, fields, asdict
 import configparser
+from dataclasses import dataclass, fields
+
+from src.util.projectRoot import projectRoot
 
 
 @dataclass
@@ -18,7 +18,7 @@ class BaseConfig:
     @classmethod
     def load_config_from_path(cls):
         cls._parser = configparser.ConfigParser()
-        cls._parser.read((projectRoot / cls._configPath))
+        cls._parser.read((projectRoot.parent.parent / cls._configPath))
 
         fieldMap = {}
         for field in fields(cls):
@@ -41,7 +41,7 @@ class BaseConfig:
             if field.name.startswith("_") or not hasattr(cls, field.name):
                 continue
             value = getattr(cls, field.name)
-            if value is not None:
+            if value:
                 result[field.name] = value
         return result
 

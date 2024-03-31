@@ -18,7 +18,7 @@ class BaseConfig:
     @classmethod
     def load_config_from_path(cls):
         cls._parser = configparser.ConfigParser()
-        cls._parser.read((projectRoot / cls._configPath))
+        cls._parser.read((projectRoot.parent.parent / 'config' / cls._configPath))
 
         fieldMap = {}
         for field in fields(cls):
@@ -63,6 +63,13 @@ class ChatbotConfig(BaseConfig):
     accessToken: str = ''
 
 
+@_initConfig
+@dataclass
+class Master(BaseConfig):
+    _configPath = "config/chatbot.ini"
+    _section = 'CHATGPT'
 
+    basicUrl: str = ''
+    accessToken: str = ''
 
 
