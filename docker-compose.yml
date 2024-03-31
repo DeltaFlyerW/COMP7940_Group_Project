@@ -4,5 +4,20 @@ version: '3.9'
 
 name: chatbot
 
+secrets:
+  conf:
+    file: ./secrets/config.ini
+
+
 services:
-  [todo]
+  master_server:
+    build: ./service/MasterServer
+    environment:
+      - CURRENT_RUN_MODE=docker
+      - CONFIG_FILE=/run/secrets/conf
+    ports:
+      - "8000:8000"
+
+    secrets:
+      - conf
+

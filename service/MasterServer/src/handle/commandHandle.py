@@ -1,8 +1,9 @@
+import logging
 from telegram import Update, ForceReply
 from telegram.ext import ContextTypes, CommandHandler
 
-from .chatGptHKBU import chatgpt_handle
-from .chatHistory import historyWrapper
+import src.handle.chatGptHKBU
+from src.handle.chatHistory import historyWrapper
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -48,4 +49,4 @@ class CommandManager:
             callback(CommandHandler(command.__name__, command))
 
 
-print(CommandManager().getHelpMessage())
+logging.info(CommandManager().getHelpMessage())

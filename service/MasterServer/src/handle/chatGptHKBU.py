@@ -31,13 +31,18 @@ class ChatGPTClient:
         headers = {'Content-Type': 'application/json', 'api-key': ChatbotConfig.accessToken}
         payload = {'messages': conversation}
 
-        response = await self.client.post(url, json=payload, headers=headers, timeout=10,
-                                          follow_redirects=True, )
+        try:
 
-        if response.status_code == 200:
-            data = response.json()
-            return data['choices'][0]['message']['content']
-        return f"Error: {response.status_code}, {response.text}"
+            response = await self.client.post(url, json=payload, headers=headers, timeout=10,
+                                            follow_redirects=True, )
+
+            if response.status_code == 200:
+                data = response.json()
+                return data['choices'][0]['message']['content']
+            return f"Error: {response.status_code}, {response.text}"
+        except Exception as e:
+            logging.error("ChatGPT connection error %s", e)
+            return str(e)
 
     async def close(self):
         await self.client.aclose()
