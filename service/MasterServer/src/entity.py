@@ -19,7 +19,7 @@ db = Database()
 
 
 class TelegramChat(db.Entity):
-    chat_id = Required(int)
+    chat_id = Required(str)
 
     messages = Set("TelegramMessage")
 
@@ -62,6 +62,7 @@ class ChatHistoryManager:
     @classmethod
     @db_session
     def getTextHistory(cls, chatId, messageId) -> list[TelegramMessage]:
+        chatId = str(chatId)
         chat = TelegramChat.get(chat_id=chatId)
         if not chat:
             chat = TelegramChat(chat_id=chatId)
@@ -72,6 +73,7 @@ class ChatHistoryManager:
     @classmethod
     @db_session
     def addHistory(cls, chatId, sender, timestamp: float, messageId=None, messageContent=None, ):
+        chatId = str(chatId)
         chat = TelegramChat.get(chat_id=chatId)
         if not chat:
             chat = TelegramChat(chat_id=chatId)
