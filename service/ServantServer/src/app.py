@@ -1,8 +1,18 @@
 import asyncio
+import base64
+import sys
 import time
 
+import httpx
 import websockets
 import json
+
+from src.util.loggingHelper import logi
+from util.projectRoot import projectRoot
+
+sys.path = [projectRoot.__str__()] + sys.path
+
+from util.configManager import MasterConfig, DiffusionConfig
 
 
 class WebsocketHandle:
@@ -20,10 +30,58 @@ class WebsocketHandle:
             'result': result
         })
 
+    @staticmethod
+    async def txt2img(event):
+        url = f"{DiffusionConfig.basicUrl}//sdapi/v1/txt2img"
+        data = event['data']
+        payload = dict(
+            prompt=data.get("prompt"),
+            negative_prompt=data.get("negative_prompt", "ugly, out of frame, low resolution, blurry"),
+            seed=-1,
+            styles=["anime"],
+            cfg_scale=7,
+            steps=10,
+            enable_hr=True,
+            batch_size=4,
+            denoising_strength=0.5
+        )
+        response = await httpx.AsyncClient().post(url, json=payload,
+                                                  headers={'Content-Type': 'application/json'},
+                                                  timeout=10, follow_redirects=True, )
+        if response.status_code == 200:
+            response_data = response.json()
+            return WebsocketHandle.returnEvent(event, {
+                'result': response_data
+            })
+
+    @staticmethod
+    async def img2img(event):
+        api_url = f"{DiffusionConfig.basicUrl}/sdapi/v1/img2img"
+        data = event['data']
+        payload = dict(
+            init_images=data.get('images'),
+            prompt=data.get("prompt", "perfect"),
+            negative_prompt=data.get("negative_prompt", "ugly, out of frame, low resolution, blurry", ),
+            seed=-1,
+            styles=["anime"],
+            cfg_scale=7,
+            steps=10,
+            enable_hr=True,
+            batch_size=4,
+            denoising_strength=0.5
+        )
+        response = await httpx.AsyncClient().post(api_url, json=payload,
+                                                  headers={'Content-Type': 'application/json'},
+                                                  timeout=10, follow_redirects=True, )
+
+        if response.status_code == 200:
+            response_data = response.json()
+            return WebsocketHandle.returnEvent(event, {
+                'result': response_data
+            })
+
 
 async def websocket_client():
-    from util.configManager import MasterConfig
-
     uri = "ws://" + MasterConfig.basicUrl
     print(uri)
     async with websockets.connect(uri) as websocket:
@@ -56,5 +114,8 @@ async def websocket_client():
 
 
 while True:
-    asyncio.run(websocket_client())
-    time.sleep(3)
+    try:
+        asyncio.run(websocket_client())
+    except Exception as e:
+        logi(e)
+    time.sleep(10)
