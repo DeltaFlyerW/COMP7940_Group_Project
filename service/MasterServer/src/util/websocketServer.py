@@ -54,7 +54,8 @@ class WebsocketEvent:
 class ClientManager:
     roleDict: dict[str, list[ServantClient]] = defaultdict(list)
     clients: dict[WebSocketServerProtocol, ServantClient] = {}
-    jobParts: dict[float, list[bytes]] = defaultdict[list]
+    jobParts: dict[float, list[bytes]] = defaultdict(list)
+    workingChatIdSet: set[int] = set()
 
     @classmethod
     async def register(cls, websocket: WebSocketServerProtocol, roles: list[str]):
@@ -95,6 +96,7 @@ class ClientManager:
         return response
 
 
+
 # create handler for each connection
 async def websocketHandler(websocket: WebSocketServerProtocol, path):
     try:
@@ -110,9 +112,9 @@ async def websocketHandler(websocket: WebSocketServerProtocol, path):
                     client.jobs[body['timestamp']] = body
             elif isinstance(message, bytes):
                 pos = message.find(b'\n')
-                timestamp = message[:pos]
-                part = timestamp[pos + 1:]
-                ClientManager.jobParts[part].append(part)
+                timestamp = float(message[:pos].decode('utf-8'))
+                part = message[pos + 1:]
+                ClientManager.jobParts[timestamp].append(part)
     except Exception as e:
         logi(f"An error occurred: {e}")
     finally:

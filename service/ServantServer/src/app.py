@@ -45,7 +45,7 @@ class WebsocketHandle:
             cfg_scale=7,
             steps=10,
             enable_hr=True,
-            batch_size=4,
+            batch_size=2,
             denoising_strength=0.5
         )
         response = await httpx.AsyncClient().post(url, json=payload,
@@ -53,24 +53,32 @@ class WebsocketHandle:
                                                   timeout=30, follow_redirects=True, )
         if response.status_code == 200:
             response_data = response.json()
+
+            for image in response_data['images']:
+                byteImage = base64.b64decode(image)
+                part = f"{event['timestamp']}\n".encode('utf-8') + byteImage
+                await event['websocket'].send(part)
             return WebsocketHandle.returnEvent(event, {
-                'result': response_data
+                'code': 0
             })
 
     @staticmethod
     async def img2img(event):
-        api_url = f"http://{DiffusionConfig.host}:{DiffusionConfig.port}//sdapi/v1/img2img"
+        api_url = f"http://{DiffusionConfig.host}:{DiffusionConfig.port}/sdapi/v1/img2img"
         data = event['data']
+        prompt = data.get("prompt")
+        if not prompt:
+            prompt = "perfect"
         payload = dict(
             init_images=data.get('images'),
-            prompt=data.get("prompt", "perfect"),
+            prompt=prompt,
             negative_prompt=data.get("negative_prompt", "ugly, out of frame, low resolution, blurry", ),
             seed=-1,
             styles=["anime"],
             cfg_scale=7,
             steps=10,
             enable_hr=True,
-            batch_size=4,
+            batch_size=2,
             denoising_strength=0.5
         )
         response = await httpx.AsyncClient().post(api_url, json=payload,
@@ -100,7 +108,6 @@ async def websocket_client():
         # Listen for messages from the server
         async for message in websocket:
             if isinstance(message, str):
-                print(message)
                 if message[0].startswith('{'):
                     event = json.loads(message)
                     event['websocket'] = websocket
@@ -111,7 +118,6 @@ async def websocket_client():
                         handle = getattr(WebsocketHandle, event['type'])
                         try:
                             result = await handle(event)
-                            print(result)
                         except Exception as e:
                             import traceback
                             traceback.print_exc()

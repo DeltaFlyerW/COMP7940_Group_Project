@@ -1,4 +1,6 @@
 # coding=utf-8
+
+
 import asyncio
 import logging
 
@@ -10,15 +12,12 @@ logging.basicConfig(format='%(asctime)s %(levelname)s - %(message)s',
 logging.getLogger("httpx").setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
-
+from util.projectRoot import projectRoot
 import sys
 
+sys.path.append(str(projectRoot))
 import websockets
 from telegram.ext import Application, MessageHandler, filters
-
-from util.projectRoot import projectRoot
-
-sys.path.append(str(projectRoot))
 
 from telegram import Bot, BotCommand
 
@@ -26,7 +25,7 @@ from src.handle import commandHandle
 from src.handle.chatHistory import historyWrapper
 from src.util import configManager
 from src.util.websocketServer import websocketHandler
-
+from src.handle.stableDiffusion import img2img
 from src.handle.chatGptHKBU import chatgpt_handle
 
 
@@ -50,6 +49,8 @@ def initApplication():
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND,
                                            historyWrapper(chatgpt_handle)))
 
+    application.add_handler(MessageHandler(filters.PHOTO, img2img))
+
     bot = Bot(token=tel_access_token, )
 
     # We use chatgpt for test this time
@@ -66,8 +67,7 @@ async def main():
     await application.initialize()
     await application.start()
     await bot.set_my_commands(commandHandle.CommandManager.getCommandList())
-
-    websocket_server = await websockets.serve(websocketHandler, "0.0.0.0", 4534)
+    websocket_server = await websockets.serve(websocketHandler, "0.0.0.0", 4534, max_size=2 ** 30)
 
     # Start other asyncio frameworks here
     # Add some logic that keeps the event loop running until you want to shutdown
