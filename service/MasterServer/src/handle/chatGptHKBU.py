@@ -6,11 +6,18 @@ import httpx
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from ..constant import CommandType
-from ..entity import ChatHistoryManager, MessageType, MessageSender
-from ..handle.chatHistory import historyWrapper
-from ..util.configManager import ChatbotConfig
-from ..util.loggingHelper import logi
+try:
+    from ..constant import CommandType
+    from ..entity import ChatHistoryManager, MessageType, MessageSender
+    from ..handle.chatHistory import historyWrapper
+    from ..util.configManager import ChatbotConfig
+    from ..util.loggingHelper import logi
+except:
+    from src.constant import CommandType
+    from src.entity import ChatHistoryManager, MessageType, MessageSender
+    from src.handle.chatHistory import historyWrapper
+    from src.util.configManager import ChatbotConfig
+    from src.util.loggingHelper import logi
 
 
 class ChatGPTClient:
@@ -31,18 +38,13 @@ class ChatGPTClient:
         headers = {'Content-Type': 'application/json', 'api-key': ChatbotConfig.accessToken}
         payload = {'messages': conversation}
 
-        try:
+        response = await self.client.post(url, json=payload, headers=headers, timeout=10,
+                                          follow_redirects=True, )
 
-            response = await self.client.post(url, json=payload, headers=headers, timeout=10,
-                                            follow_redirects=True, )
-
-            if response.status_code == 200:
-                data = response.json()
-                return data['choices'][0]['message']['content']
-            return f"Error: {response.status_code}, {response.text}"
-        except Exception as e:
-            logging.error("ChatGPT connection error %s", e)
-            return str(e)
+        if response.status_code == 200:
+            data = response.json()
+            return data['choices'][0]['message']['content']
+        return f"Error: {response.status_code}, {response.text}"
 
     async def close(self):
         await self.client.aclose()
