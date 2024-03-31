@@ -1,3 +1,5 @@
+import os
+
 from .projectRoot import projectRoot
 
 from dataclasses import dataclass, fields, asdict
@@ -18,7 +20,12 @@ class BaseConfig:
     @classmethod
     def load_config_from_path(cls):
         cls._parser = configparser.ConfigParser()
-        cls._parser.read((projectRoot / cls._configPath))
+
+        if os.environ.get("CURRENT_RUN_MODE") == "docker":
+            conf = os.environ["CONFIG_FILE"]
+            cls._parser.read(conf)
+        else:
+            cls._parser.read((projectRoot / cls._configPath))
 
         fieldMap = {}
         for field in fields(cls):
@@ -41,7 +48,7 @@ class BaseConfig:
             if field.name.startswith("_") or not hasattr(cls, field.name):
                 continue
             value = getattr(cls, field.name)
-            if value is not None:
+            if value:
                 result[field.name] = value
         return result
 
