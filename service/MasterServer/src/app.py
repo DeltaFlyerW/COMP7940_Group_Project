@@ -1,11 +1,18 @@
 # coding=utf-8
 import asyncio
 import logging
-import os
+# Enable logging
+logging.basicConfig(format='%(asctime)s %(levelname)s - %(message)s',
+                    level=logging.INFO)
+
+# set higher logging level for httpx to avoid all GET and POST requests being logged
+logging.getLogger("httpx").setLevel(logging.WARNING)
+
+logger = logging.getLogger(__name__)
+
 import sys
 
 import websockets
-from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters
 
 
@@ -20,14 +27,7 @@ from util.websocketServer import websocketHandler
 
 from handle.chatGptHKBU import chatgpt_handle
 
-# Enable logging
-logging.basicConfig(format='%(asctime)s %(levelname)s - %(message)s',
-                    level=logging.INFO)
 
-# set higher logging level for httpx to avoid all GET and POST requests being logged
-logging.getLogger("httpx").setLevel(logging.WARNING)
-
-logger = logging.getLogger(__name__)
 
 
 # Define a few command handlers. These usually take the two arguments update and
