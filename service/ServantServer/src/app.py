@@ -79,8 +79,13 @@ class WebsocketHandle:
 
         if response.status_code == 200:
             response_data = response.json()
+
+            for image in response_data['images']:
+                byteImage = base64.b64decode(image)
+                part = f"{event['timestamp']}\n".encode('utf-8') + byteImage
+                await event['websocket'].send(part)
             return WebsocketHandle.returnEvent(event, {
-                'result': response_data
+                'code': 0
             })
 
 
@@ -98,6 +103,7 @@ async def websocket_client():
                 print(message)
                 if message[0].startswith('{'):
                     event = json.loads(message)
+                    event['websocket'] = websocket
                     # Check if 'type' is in the event and print it
                     if 'type' in event:
                         print(f"Event type: {event['type']}")

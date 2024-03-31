@@ -54,6 +54,7 @@ class WebsocketEvent:
 class ClientManager:
     roleDict: dict[str, list[ServantClient]] = defaultdict(list)
     clients: dict[WebSocketServerProtocol, ServantClient] = {}
+    jobParts: dict[float, list[bytes]] = defaultdict[list]
 
     @classmethod
     async def register(cls, websocket: WebSocketServerProtocol, roles: list[str]):
@@ -89,6 +90,8 @@ class ClientManager:
             await asyncio.sleep(0.1)
 
         response = client.jobs.pop(timestamp)
+        if timestamp in cls.jobParts:
+            response['parts'] = cls.jobParts.pop(timestamp)
         return response
 
 
@@ -101,9 +104,15 @@ async def websocketHandler(websocket: WebSocketServerProtocol, path):
         client = await ClientManager.register(websocket, event.roles)
 
         async for message in websocket:
-            body = json.loads(message)
-            if 'timestamp' in body:
-                client.jobs[body['timestamp']] = body
+            if isinstance(message, str):
+                body = json.loads(message)
+                if 'timestamp' in body:
+                    client.jobs[body['timestamp']] = body
+            elif isinstance(message, bytes):
+                pos = message.find(b'\n')
+                timestamp = message[:pos]
+                part = timestamp[pos + 1:]
+                ClientManager.jobParts[part].append(part)
     except Exception as e:
         logi(f"An error occurred: {e}")
     finally:
