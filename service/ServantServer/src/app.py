@@ -11,7 +11,6 @@ import httpx
 import websockets
 import json
 
-
 from util.projectRoot import projectRoot
 
 sys.path = [projectRoot.__str__()] + sys.path
@@ -36,7 +35,7 @@ class WebsocketHandle:
 
     @staticmethod
     async def txt2img(event):
-        url = f"{DiffusionConfig.basicUrl}//sdapi/v1/txt2img"
+        url = f"http://{DiffusionConfig.host}:{DiffusionConfig.port}/sdapi/v1/txt2img"
         data = event['data']
         payload = dict(
             prompt=data.get("prompt"),
@@ -51,7 +50,7 @@ class WebsocketHandle:
         )
         response = await httpx.AsyncClient().post(url, json=payload,
                                                   headers={'Content-Type': 'application/json'},
-                                                  timeout=10, follow_redirects=True, )
+                                                  timeout=30, follow_redirects=True, )
         if response.status_code == 200:
             response_data = response.json()
             return WebsocketHandle.returnEvent(event, {
@@ -60,7 +59,7 @@ class WebsocketHandle:
 
     @staticmethod
     async def img2img(event):
-        api_url = f"{DiffusionConfig.basicUrl}/sdapi/v1/img2img"
+        api_url = f"http://{DiffusionConfig.host}:{DiffusionConfig.port}//sdapi/v1/img2img"
         data = event['data']
         payload = dict(
             init_images=data.get('images'),
@@ -122,4 +121,4 @@ while True:
         asyncio.run(websocket_client())
     except Exception as e:
         logi(e)
-    time.sleep(10)
+    time.sleep(3)

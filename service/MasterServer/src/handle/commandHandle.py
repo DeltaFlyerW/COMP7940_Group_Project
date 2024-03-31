@@ -4,7 +4,7 @@ from telegram.ext import ContextTypes, CommandHandler
 
 from src.handle.chatGptHKBU import chatgpt_handle
 from src.handle.chatHistory import historyWrapper
-from src.util.websocketServer import ClientManager, WebsocketEvent
+from src.handle.stableDiffusion import img
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -29,14 +29,6 @@ async def regenerate(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
     await update.message.reply_text("Regenerating...")
     await chatgpt_handle(update, context)
 
-
-async def img(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    prompt = update.message
-    ClientManager.dispatch("stable-diffusion",
-                           WebsocketEvent.DispatchJob("txt2img", {'prompt': prompt}
-                                                      )
-
-                           )
 
 
 class CommandManager:

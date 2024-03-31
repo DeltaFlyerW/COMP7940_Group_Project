@@ -22,3 +22,4 @@ def handle(update: Update, context: ContextTypes.DEFAULT_TYPE):
         update.effective_message.message_id,
         update.effective_message.text
     )
+

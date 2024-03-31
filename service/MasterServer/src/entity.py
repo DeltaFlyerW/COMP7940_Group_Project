@@ -1,4 +1,5 @@
 import sys
+from typing import TypedDict
 
 from pony.orm.core import *
 
@@ -58,6 +59,14 @@ def initDatabase():
 initDatabase()
 
 
+class MessageDict(TypedDict):
+    chat_id: str
+    message_id: str
+    type: str
+    sender: str
+    create_timestamp: float
+
+
 class ChatHistoryManager:
     @classmethod
     @db_session
@@ -87,5 +96,17 @@ class ChatHistoryManager:
             create_timestamp=timestamp
         )
 
+        messageDict = MessageDict(
+            chat_id=chatId, message_id=str(messageId),
+            type=MessageType.text, sender=sender,
+            create_timestamp=timestamp
+        )
+
+        cls.addHistoryToNoSQL(messageDict)
+
         db.commit()
         return message.id
+
+    @classmethod
+    def addHistoryToNoSQL(cls, messageDict: MessageDict):
+        pass
