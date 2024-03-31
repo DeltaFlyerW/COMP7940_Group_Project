@@ -8,13 +8,16 @@ import websockets
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters
 
+
+from util.projectRoot import projectRoot
+sys.path.append(str(projectRoot))
+
+
 from src.handle import chatHistory, commandHandle
 from src.handle.chatHistory import historyWrapper
 from src.util import configManager
 from src.util.websocketServer import websocketHandler
-from util.projectRoot import projectRoot
 
-sys.path.append(projectRoot)
 from src.handle.chatGptHKBU import chatgpt_handle
 
 # Enable logging

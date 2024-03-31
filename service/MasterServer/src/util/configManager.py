@@ -18,7 +18,7 @@ class BaseConfig:
     @classmethod
     def load_config_from_path(cls):
         cls._parser = configparser.ConfigParser()
-        cls._parser.read((projectRoot.parent.parent / cls._configPath))
+        cls._parser.read((projectRoot / cls._configPath))
 
         fieldMap = {}
         for field in fields(cls):
