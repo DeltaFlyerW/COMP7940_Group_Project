@@ -13,12 +13,12 @@ from util.projectRoot import projectRoot
 sys.path.append(str(projectRoot))
 
 
-from src.handle import chatHistory, commandHandle
-from src.handle.chatHistory import historyWrapper
-from src.util import configManager
-from src.util.websocketServer import websocketHandler
+from handle import chatHistory, commandHandle
+from handle.chatHistory import historyWrapper
+from util import configManager
+from util.websocketServer import websocketHandler
 
-from src.handle.chatGptHKBU import chatgpt_handle
+from handle.chatGptHKBU import chatgpt_handle
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s %(levelname)s - %(message)s',

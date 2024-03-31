@@ -17,7 +17,7 @@ def logi(*args, message=None, label=None, **kwargs, ):
             label = get_caller_name()
         message = label + ": %s"
     else:
-        if '%s' not in message:
+        if '%s' not in message and len(args) > 1:
             message += ': %s'
     if args:
         content = args

@@ -1,8 +1,8 @@
 from telegram import Update, ForceReply
 from telegram.ext import ContextTypes, CommandHandler
 
-import src.handle.chatGptHKBU
-from src.handle.chatHistory import historyWrapper
+from .chatGptHKBU import chatgpt_handle
+from .chatHistory import historyWrapper
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -25,7 +25,7 @@ async def clear(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 async def regenerate(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Send a message when the command /start is issued."""
     await update.message.reply_text("Regenerating...")
-    await src.handle.chatGptHKBU.chatgpt_handle(update, context)
+    await chatgpt_handle(update, context)
 
 
 class CommandManager:

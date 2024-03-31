@@ -2,3 +2,4 @@ pony
 python-telegram-bot
 httpx
 websockets
+jsonpickle

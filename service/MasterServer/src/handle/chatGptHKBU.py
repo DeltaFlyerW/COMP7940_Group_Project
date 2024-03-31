@@ -6,11 +6,11 @@ import httpx
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from src.constant import CommandType
-from src.entity import ChatHistoryManager, MessageType, MessageSender
-from src.handle.chatHistory import historyWrapper
-from src.util.configManager import ChatbotConfig
-from src.util.loggingHelper import logi
+from ..constant import CommandType
+from ..entity import ChatHistoryManager, MessageType, MessageSender
+from ..handle.chatHistory import historyWrapper
+from ..util.configManager import ChatbotConfig
+from ..util.loggingHelper import logi
 
 
 class ChatGPTClient:

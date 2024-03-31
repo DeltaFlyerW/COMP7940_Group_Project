@@ -1,7 +1,7 @@
 import configparser
 from dataclasses import dataclass, fields
 
-from src.util.projectRoot import projectRoot
+from .projectRoot import projectRoot
 
 
 @dataclass
