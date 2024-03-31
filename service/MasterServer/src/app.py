@@ -67,7 +67,7 @@ async def main():
     await application.start()
     await bot.set_my_commands(commandHandle.CommandManager.getCommandList())
 
-    websocket_server = await websockets.serve(websocketHandler, "127.0.0.1", 8000)
+    websocket_server = await websockets.serve(websocketHandler, "0.0.0.0", 8000)
 
     # Start other asyncio frameworks here
     # Add some logic that keeps the event loop running until you want to shutdown
