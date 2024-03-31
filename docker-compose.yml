@@ -11,6 +11,11 @@ secrets:
   servant_conf:
     file: ./secrets/servant_conf.ini
 
+# We connect all services through docker brigde
+networks:
+  master:
+    driver: bridge
+
 
 services:
 # This is the main service we provide
@@ -26,6 +31,9 @@ services:
 
     secrets:
       - conf
+    
+    networks:
+      - master
 
   servent_server:
     build: ./service/ServantServer
@@ -35,5 +43,9 @@ services:
     
     secrets:
       - servant_conf
+
+    networks:
+      - master
+
     depends_on:
       - master_server
