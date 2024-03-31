@@ -71,3 +71,13 @@ class MasterConfig(BaseConfig):
 
     basicUrl: str = ''
     accessToken: str = ''
+
+
+@_initConfig
+@dataclass
+class DiffusionConfig(BaseConfig):
+    _configPath = "config/diffusion.ini"
+    _section = 'DIFFUSION'
+
+    host: str
+    port: int

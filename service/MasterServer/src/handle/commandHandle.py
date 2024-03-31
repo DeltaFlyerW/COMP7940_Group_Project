@@ -4,6 +4,7 @@ from telegram.ext import ContextTypes, CommandHandler
 
 from src.handle.chatGptHKBU import chatgpt_handle
 from src.handle.chatHistory import historyWrapper
+from src.util.websocketServer import ClientManager, WebsocketEvent
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -29,18 +30,28 @@ async def regenerate(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
     await chatgpt_handle(update, context)
 
 
+async def img(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    prompt = update.message
+    ClientManager.dispatch("stable-diffusion",
+                           WebsocketEvent.DispatchJob("txt2img", {'prompt': prompt}
+                                                      )
+
+                           )
+
+
 class CommandManager:
     commands = {
-        start: "Get command usage",
-        clear: "Clear your chat history.",
-        regenerate: 'Regenerate last response.'
+        start: "- Get command usage",
+        clear: "- Clear your chat history.",
+        regenerate: '- Regenerate last response.',
+        img: "[prompt] - Generate a image with Stable Diffusion."
     }
 
     @classmethod
     def getHelpMessage(cls) -> str:
         help_message = "Available Commands:\n"
         for command, description in cls.commands.items():
-            help_message += f"/{command.__name__} - {description}\n"
+            help_message += f"/{command.__name__} {description}\n"
         return help_message
 
     @classmethod
