@@ -24,7 +24,7 @@ class BaseWebsocketEvent:
     timestamp: float = None
 
     @classmethod
-    def decode(cls, message: str | dict):
+    def decode(cls, message):
         if isinstance(message, str):
             message = json.loads(message)
         result = cls
