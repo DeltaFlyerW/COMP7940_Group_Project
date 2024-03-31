@@ -5,7 +5,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from typing import Callable
 
-import jsonpickle as jsonpickle
+import jsonpickle
 
 from websockets import WebSocketServerProtocol
 
