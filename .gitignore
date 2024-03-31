@@ -162,3 +162,11 @@ cython_debug/
 /service/MasterServer/config/
 /service/ServantServer/config/
 messageDatabase.sqlite
+
+
+# Test files
+*test*
+
+*secrets*
+
+.vscode
