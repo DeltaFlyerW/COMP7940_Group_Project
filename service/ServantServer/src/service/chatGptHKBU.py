@@ -19,6 +19,10 @@ class ChatGPTClient:
     def __init__(self):
         self.client = httpx.AsyncClient()
 
+    @classmethod
+    def restart(cls):
+        cls._instance = cls()
+
     async def chat(self, conversation) -> str:
         url = f"{ChatbotConfig.basicUrl}/deployments/{ChatbotConfig.modelName}/chat/completions/" \
               f"?api-version={ChatbotConfig.apiVersion}"

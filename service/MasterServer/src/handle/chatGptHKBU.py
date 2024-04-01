@@ -1,3 +1,4 @@
+import json
 import logging
 import time
 
@@ -9,6 +10,7 @@ from telegram.ext import ContextTypes
 from src.constant import CommandType
 from src.entity import ChatHistoryManager, MessageType, MessageSender
 from src.handle.chatHistory import historyWrapper
+from src.handle.stableDiffusion import img
 from src.util.configManager import ChatbotConfig
 from src.util.loggingHelper import logi
 from src.util.websocketServer import ClientManager, WebsocketEvent
@@ -128,11 +130,52 @@ async def chatgpt_handle(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         if len(history) > 3:
             break
 
-    history.append({"role": "system", "content": "You are a rude yet helpful assistant."
-                                                 " Reply in markdown format if needed."}, )
+    history.append({"role": "system", "content": '''
+You are a sophisticated chatbot designed to assist users in exploring and developing new hobbies such as watching movies or TV shows, hiking, cookery, and more. Your goal is to provide thoughtful, personalized recommendations and advice that cater to the interests and queries of the user. When responding, remember to:
+1. **Understand the User's Request**: Carefully analyze the user's query to determine the hobby they are interested in or the kind of recommendation they are seeking.
+2. **Provide Detailed Recommendations**: Offer suggestions that are specific and actionable. For example, if someone is interested in hiking, recommend trails suitable for their experience level, or if they're exploring cookery, suggest recipes based on their dietary preferences.
+3. **Use Telegram Markdown for Clarity**: Format your replies using Telegram markdown to make your messages more readable. Use bold (`**text**`) for emphasis, `__italics__` for highlighting, and `[link text](URL)` for sharing useful resources.
+
+
+*Incorporate Expressive Visuals*: At the end of your reply, invoke a text-to-image model (SD2) to generate a portrait that 
+captures the emotion of your response. This adds a personal touch and enhances the user's interaction with you. 
+suggesting some different portrait for each user base on their request.
+
+Example"
+User: "I'm looking for a new hobby, something outdoors."
+
+Assistant: "
+Exploring the great outdoors is a fantastic choice! Have you considered hiking? 
+It's not only a way to enjoy nature but also a great exercise. For beginners,
+I'd recommend starting with local trails that are marked as 'easy'.
+Websites like AllTrails can help you find trails near you.
+Also, ensure you have the right gear, especially a good pair of hiking shoes. Happy hiking! 🌲
+
+Caption: In case you're feeling adventurous, here's a little inspiration for you.
+```json
+{"portrait":"18, female, long curly hair, smiling, casual jacket","emotion":"inspired, adventurous, ready",
+"background":"mountain, forest", "gesture": "climbing"}
+```
+"
+'''
+                    }, )
     history.reverse()
-    reply_msg = await ChatGPTDispatchClient.get().chat(history)  # Send the text to ChatGPT
+    reply_msg: str = await ChatGPTDispatchClient.get().chat(history)  # Send the text to ChatGPT
     logging.info("[ChatGPT] Conversation:  %s", history)
+    import re
+    regex = re.compile(r'```json\s+(\{"portrait.*?)```', re.DOTALL)
+    promptDict = None
+    caption = None
+    if regex.search(reply_msg):
+        try:
+            promptDict = json.loads(regex.search(reply_msg).group(1))
+            caption = re.search(r"caption:(\s+.*?)\n", reply_msg)
+            reply_msg = reply_msg.replace(caption.group(0), '')
+            caption = caption.group(1)
+        except:
+            pass
+        reply_msg = regex.sub('', reply_msg)
+
     entityId = ChatHistoryManager.addHistory(
         chatId=chadId, sender=MessageSender.bot, timestamp=time.time(), messageContent=reply_msg,
         messageId=0,
@@ -143,3 +186,7 @@ async def chatgpt_handle(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     await context.bot.send_message(chat_id=update.effective_chat.id,
                                    text=escape_special_chars(reply_msg),
                                    parse_mode='MarkdownV2')
+
+    if promptDict:
+        await img(update, context, prompt="portrait, " + ','.join(promptDict.values()),
+                  caption=caption, batchSize=1)

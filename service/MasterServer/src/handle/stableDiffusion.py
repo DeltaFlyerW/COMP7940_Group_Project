@@ -39,10 +39,13 @@ def resize_image(image_bytes, max_length=256):
 
 
 @accessWrapper
-async def img(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    prompt = ','.join(context.args)
+async def img(update: Update, context: ContextTypes.DEFAULT_TYPE, prompt=None, caption=None, batchSize=4):
+    if not prompt:
+        prompt = ','.join(context.args)
     response = await ClientManager.dispatch("stable-diffusion",
-                                            WebsocketEvent.DispatchJob("txt2img", {'prompt': prompt}
+                                            WebsocketEvent.DispatchJob("txt2img", {'prompt': prompt,
+                                                                                   'batch_size': batchSize
+                                                                                   }
                                                                        )
                                             )
     media = []
@@ -56,7 +59,8 @@ async def img(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # Send media group
 
-    await context.bot.send_media_group(chat_id=update.effective_chat.id, media=media)
+    await context.bot.send_media_group(chat_id=update.effective_chat.id, media=media,
+                                       caption=caption, reply_to_message_id=update.effective_message.message_id)
 
 
 @accessWrapper
