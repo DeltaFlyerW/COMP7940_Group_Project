@@ -1,3 +1,4 @@
+setuptools
 pony
 python-telegram-bot
 httpx
