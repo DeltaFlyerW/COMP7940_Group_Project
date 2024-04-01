@@ -95,6 +95,13 @@ class ClientManager:
             response['parts'] = cls.jobParts.pop(timestamp)
         return response
 
+    @classmethod
+    def status(cls):
+        result = "Bot Servant Status:\n"
+        for role, value in cls.roleDict.items():
+            result += f"  {role}: {len(value)}"
+        return result
+
 
 # create handler for each connection
 async def websocketHandler(websocket: WebSocketServerProtocol, path):
