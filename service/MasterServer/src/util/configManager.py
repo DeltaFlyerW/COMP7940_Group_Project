@@ -4,6 +4,8 @@ from dataclasses import dataclass, fields
 
 from .projectRoot import projectRoot
 import logging
+
+
 @dataclass
 class BaseConfig:
     _configPath: str
@@ -25,8 +27,6 @@ class BaseConfig:
         else:
             cls._parser.read((projectRoot / cls._configPath))
 
-        
-        
         fieldMap = {}
         for field in fields(cls):
             if field.name.startswith("_"):
@@ -83,7 +83,7 @@ class TelegramConfig(BaseConfig):
 @dataclass
 class DatabaseConfig(BaseConfig):
     _configPath = "config/database.ini"
-    _section = 'SQLITE'
+    _section = 'POSTGRES'
 
     provider: str = ''
     filename: str = ''
@@ -92,3 +92,4 @@ class DatabaseConfig(BaseConfig):
     user: str = ''
     password: str = ''
     db: str = ''
+    database: str = ''
