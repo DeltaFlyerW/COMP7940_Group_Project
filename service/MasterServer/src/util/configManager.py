@@ -3,7 +3,7 @@ import configparser
 from dataclasses import dataclass, fields
 
 from .projectRoot import projectRoot
-
+import logging
 @dataclass
 class BaseConfig:
     _configPath: str
@@ -26,7 +26,7 @@ class BaseConfig:
         if os.environ.get("CURRENT_RUN_MODE") == "docker":
             conf = os.environ["CONFIG_FILE"]
             cls._parser.read(conf)
-        elif os.environ.get("CURRENT_RUN_MODE") == "render":
+        elif os.environ.get("CURRENT_RUN_MODE") == "google":
             conf = os.environ["CONFIG_FILE"]
             cls._parser.read(conf)
         else:
