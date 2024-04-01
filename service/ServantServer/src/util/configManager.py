@@ -4,7 +4,7 @@ from .projectRoot import projectRoot
 
 from dataclasses import dataclass, fields, asdict
 import configparser
-
+import logging
 
 @dataclass
 class BaseConfig:
@@ -20,8 +20,18 @@ class BaseConfig:
     @classmethod
     def load_config_from_path(cls):
         cls._parser = configparser.ConfigParser()
-
-        if os.environ.get("CURRENT_RUN_MODE") == "docker":
+        mode = os.environ.get("CURRENT_RUN_MODE")
+        if cls._section == "MASTER":
+            if mode == "docker":
+                cls._section = "MASTER_DOCKER"
+            elif mode == "google":
+                cls._section = "MASTER_GOOGLE"
+            else:
+                cls._section = "MASTER_LOCAL"
+        if mode == "docker":
+            conf = os.environ["CONFIG_FILE"]
+            cls._parser.read(conf)
+        elif mode == "google":
             conf = os.environ["CONFIG_FILE"]
             cls._parser.read(conf)
         else:
