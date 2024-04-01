@@ -5,6 +5,7 @@ from telegram.ext import ContextTypes, CommandHandler
 from src.handle.chatGptHKBU import chatgpt_handle
 from src.handle.chatHistory import historyWrapper
 from src.handle.stableDiffusion import img
+from src.util.websocketServer import ClientManager
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -23,6 +24,11 @@ async def clear(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text("Your chat history has been cleared.")
 
 
+async def status(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Send a message when the command /start is issued."""
+    await update.message.reply_text(ClientManager.status())
+
+
 @historyWrapper
 async def regenerate(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Send a message when the command /start is issued."""
@@ -35,6 +41,7 @@ class CommandManager:
         start: "- Get command usage",
         clear: "- Clear your chat history.",
         regenerate: '- Regenerate last response.',
+        status: "- Get bot servant status.",
         img: BotCommand("img", "Generate a image with Stable Diffusion.", api_kwargs={
             "prompt": "Prompt"
         })

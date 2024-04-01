@@ -48,6 +48,10 @@ async def img(update: Update, context: ContextTypes.DEFAULT_TYPE, prompt=None, c
                                                                                    }
                                                                        )
                                             )
+    if isinstance(response, WebsocketEvent.Error):
+        await context.bot.send_message(chat_id=update.effective_chat.id, text=response.message,
+                                       caption=caption, reply_to_message_id=update.effective_message.message_id)
+
     media = []
     for img_data in response['parts']:
         bio = BytesIO(img_data)
