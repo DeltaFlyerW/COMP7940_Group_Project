@@ -55,7 +55,7 @@ class ClientManager:
     roleDict: dict[str, list[ServantClient]] = defaultdict(list)
     clients: dict[WebSocketServerProtocol, ServantClient] = {}
     jobParts: dict[float, list[bytes]] = defaultdict(list)
-    workingChatIdSet: dict[int, float] = set()
+    workingChatIdSet: dict[int, float] = dict()
 
     @classmethod
     async def register(cls, websocket: WebSocketServerProtocol, roles: list[str]):

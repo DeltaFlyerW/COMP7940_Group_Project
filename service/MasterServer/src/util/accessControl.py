@@ -7,15 +7,17 @@ from src.util.websocketServer import ClientManager
 
 
 def accessWrapper(func, timeout=60):
-    async def wrapped(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def wrapped(update: Update, context: ContextTypes.DEFAULT_TYPE, *args, **kwargs):
         chatId = update.effective_chat.id
         timestamp = time.time()
         if chatId in ClientManager.workingChatIdSet:
             dis = int(timestamp - ClientManager.workingChatIdSet[chatId])
             if dis < timeout:
-                await context.bot.send_message(chatId, f"Your request are processing...({dis}s ago)")
+                if not kwargs.get('suppress'):
+                    await context.bot.send_message(chatId, f"Your request are processing...({dis}s ago)")
                 return
-        result = await func(update, context)
+        ClientManager.workingChatIdSet[chatId] = timestamp
+        result = await func(update, context, *args, **kwargs)
         ClientManager.workingChatIdSet.pop(chatId)
         return result
 
