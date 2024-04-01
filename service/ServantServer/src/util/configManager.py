@@ -24,14 +24,9 @@ class BaseConfig:
         if cls._section == "MASTER":
             if mode == "docker":
                 cls._section = "MASTER_DOCKER"
-            elif mode == "google":
-                cls._section = "MASTER_GOOGLE"
             else:
                 cls._section = "MASTER_LOCAL"
         if mode == "docker":
-            conf = os.environ["CONFIG_FILE"]
-            cls._parser.read(conf)
-        elif mode == "google":
             conf = os.environ["CONFIG_FILE"]
             cls._parser.read(conf)
         else:
