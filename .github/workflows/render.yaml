@@ -20,5 +20,7 @@ jobs:
           script: |
             cd /home/docker_deploy/COMP7940_Group_Project
             git pull
-            docker-compose down
-            docker-compose up --build -d
+            docker compose down
+            docker rmi -f parkerint64/chatbot_servant_server
+            docker rmi -f parkerint64/chatbot_master_server
+            docker compose up --build -d
