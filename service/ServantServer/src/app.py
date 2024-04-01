@@ -1,12 +1,12 @@
-import asyncio
-import base64
-import sys
-import time
 import logging
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s %(levelname)s - %(message)s',
                     level=logging.INFO)
+import asyncio
+import base64
+import sys
+import time
 import httpx
 import websockets
 import json
@@ -37,7 +37,7 @@ class WebsocketHandle:
     async def txt2img(event):
         url = f"http://{DiffusionConfig.host}:{DiffusionConfig.port}/sdapi/v1/txt2img"
         data = event['data']
-        print(data)
+        logi(data)
         prompts = data.get("prompt")
         prompt = f'{prompts}' \
                  f', ethereal, realistic anime, trending on pixiv, detailed, clean lines, sharp lines, crisp lines, ' \
@@ -110,12 +110,21 @@ class WebsocketHandle:
 
 async def websocket_client():
     uri = "ws://" + MasterConfig.basicUrl
-    print(uri)
+    logi(uri)
     ChatGPTClient.restart()
+
+    roles = ['chatbot', ]
+    try:
+        result = await httpx.AsyncClient().get(f"http://{DiffusionConfig.host}:{DiffusionConfig.port}/docs", timeout=1)
+    except Exception as e:
+        pass
+    else:
+        roles.append('stable-diffusion')
+
     async with websockets.connect(uri) as websocket:
-        register_event = {'type': 'register', 'roles': ['chatbot', 'stable-diffusion']}
+        register_event = {'type': 'register', 'roles': roles}
         await websocket.send(json.dumps(register_event))
-        print(f"Sent: {register_event}")
+        logi(f"Sent: {register_event}")
 
         # Listen for messages from the server
         async for message in websocket:
@@ -125,7 +134,7 @@ async def websocket_client():
                     event['websocket'] = websocket
                     # Check if 'type' is in the event and print it
                     if 'type' in event:
-                        print(f"Event type: {event['type']}")
+                        logi(f"Event type: {event['type']}")
 
                         handle = getattr(WebsocketHandle, event['type'])
                         try:
@@ -144,5 +153,8 @@ while True:
     try:
         asyncio.run(websocket_client())
     except Exception as e:
+        import traceback
+
+        traceback.print_exc()
         logi(e)
     time.sleep(3)
