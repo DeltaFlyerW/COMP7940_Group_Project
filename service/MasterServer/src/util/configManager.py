@@ -3,8 +3,7 @@ import configparser
 from dataclasses import dataclass, fields
 
 from .projectRoot import projectRoot
-
-
+import logging
 @dataclass
 class BaseConfig:
     _configPath: str
@@ -20,12 +19,21 @@ class BaseConfig:
     def load_config_from_path(cls):
         cls._parser = configparser.ConfigParser()
 
+
+        logging.info("[Optional] Current run mode: %s", os.environ.get("CURRENT_RUN_MODE"))
+        logging.info("[Optional] Current config file's location %s", os.environ.get("CONFIG_FILE"))
+
         if os.environ.get("CURRENT_RUN_MODE") == "docker":
+            conf = os.environ["CONFIG_FILE"]
+            cls._parser.read(conf)
+        elif os.environ.get("CURRENT_RUN_MODE") == "google":
             conf = os.environ["CONFIG_FILE"]
             cls._parser.read(conf)
         else:
             cls._parser.read((projectRoot / cls._configPath))
 
+        
+        
         fieldMap = {}
         for field in fields(cls):
             if field.name.startswith("_"):

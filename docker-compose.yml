@@ -22,9 +22,10 @@ services:
 # The chatbot service
   master_server:
     build: ./service/MasterServer
+    image: parkerint64/chatbot_master_server
     environment:
     # In our program, we use this varibale to indicate if we're in container env or not
-      - CURRENT_RUN_MODE=docker    
+      - CURRENT_RUN_MODE=docker
       - CONFIG_FILE=/run/secrets/conf
     ports:
       - "8000:8000" # port forward, 8000 -> 8000
@@ -37,6 +38,7 @@ services:
 
   servent_server:
     build: ./service/ServantServer
+    image: parkerint64/chatbot_servant_server
     environment:
       - CURRENT_RUN_MODE=docker
       - CONFIG_FILE=/run/secrets/servant_conf

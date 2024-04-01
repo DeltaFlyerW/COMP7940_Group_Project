@@ -3,3 +3,4 @@ python-telegram-bot
 httpx
 websockets
 jsonpickle
+pillow
