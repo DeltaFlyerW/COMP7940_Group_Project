@@ -28,7 +28,7 @@ services:
       - CURRENT_RUN_MODE=docker
       - CONFIG_FILE=/run/secrets/conf
     ports:
-      - "8000:8000" # port forward, 8000 -> 8000
+      - "4534:4534" # port forward, 8000 -> 8000
 
     secrets:
       - conf
