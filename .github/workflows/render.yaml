@@ -1,24 +1,24 @@
 name: render-deploy
-run-name: Deploy to render
-on: 
-  [push, pull_request]:
+on:
+  push:
     branches:
-      - main
+      - main  # or any branch you want to deploy from
 
 jobs:
   deploy:
-    name: Deploy app
-    runs-on: self-hosted
-    concurrency: deploy-group    # optional: ensure only one action runs at a time
+    runs-on: self-hosted  # Make sure this matches your self-hosted runner's label
     steps:
-      - uses: actions/checkout@v2
-      - name: Clone to the remote
-        run: git clone https://github.com/parker-int64/COMP7940_Group_Project.git && cd COMP7940_Group_Project
-      - name: Stop the current compose job
-        run: docker compose down
-      - name: Deleting previous images
-        run: docker rmi -f parkerint64/chatbot_servant_server
-        run: docker rmi -f parkerint64/chatbot_master_server
-        run: docker rmi -f <none> # optional, incase we rebuild a image with empty name
-      - name: Rebuild the images and launch the app.
-        run: docker compose up -d --build # build & run
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: SSH and Deploy
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /home/docker_deploy/COMP7940_Group_Project
+            git pull
+            docker-compose down
+            docker-compose up --build -d
