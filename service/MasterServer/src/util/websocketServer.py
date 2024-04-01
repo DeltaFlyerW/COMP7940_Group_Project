@@ -55,7 +55,7 @@ class ClientManager:
     roleDict: dict[str, list[ServantClient]] = defaultdict(list)
     clients: dict[WebSocketServerProtocol, ServantClient] = {}
     jobParts: dict[float, list[bytes]] = defaultdict(list)
-    workingChatIdSet: set[int] = set()
+    workingChatIdSet: dict[int, float] = set()
 
     @classmethod
     async def register(cls, websocket: WebSocketServerProtocol, roles: list[str]):
@@ -94,7 +94,6 @@ class ClientManager:
         if timestamp in cls.jobParts:
             response['parts'] = cls.jobParts.pop(timestamp)
         return response
-
 
 
 # create handler for each connection

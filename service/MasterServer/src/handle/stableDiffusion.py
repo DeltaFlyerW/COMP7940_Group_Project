@@ -1,9 +1,11 @@
 import base64
+import time
 from io import BytesIO
 
 from telegram import Update, InputMediaPhoto
 from telegram.ext import ContextTypes
 
+from src.util.accessControl import accessWrapper
 from src.util.websocketServer import ClientManager, WebsocketEvent
 
 from PIL import Image
@@ -36,15 +38,8 @@ def resize_image(image_bytes, max_length=256):
     return img_output.getvalue()
 
 
+@accessWrapper
 async def img(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chatId = update.effective_chat.id
-    if chatId in ClientManager.workingChatIdSet:
-        await context.bot.send_message(chatId, "Your images are generating...")
-        return
-    else:
-        ClientManager.workingChatIdSet.add(chatId)
-    ClientManager.workingChatIdSet.add(update.effective_chat.id)
-
     prompt = ','.join(context.args)
     response = await ClientManager.dispatch("stable-diffusion",
                                             WebsocketEvent.DispatchJob("txt2img", {'prompt': prompt}
@@ -62,16 +57,10 @@ async def img(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Send media group
 
     await context.bot.send_media_group(chat_id=update.effective_chat.id, media=media)
-    ClientManager.workingChatIdSet.remove(chatId)
 
 
+@accessWrapper
 async def img2img(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chatId = update.effective_chat.id
-    if chatId in ClientManager.workingChatIdSet:
-        await context.bot.send_message(chatId, "Your images are generating...")
-        return
-    else:
-        ClientManager.workingChatIdSet.add(chatId)
     photo_list = update.message.photo
     images = []
     for photo in photo_list:
@@ -95,4 +84,3 @@ async def img2img(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Append to the media list as InputMediaPhoto
         media.append(InputMediaPhoto(media=bio))
     await context.bot.send_media_group(chat_id=update.effective_chat.id, media=media)
-    ClientManager.workingChatIdSet.remove(chatId)
