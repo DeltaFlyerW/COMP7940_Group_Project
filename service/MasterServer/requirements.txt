@@ -5,4 +5,4 @@ httpx
 websockets
 jsonpickle
 pillow
-psycopg2
+psycopg[binary]
