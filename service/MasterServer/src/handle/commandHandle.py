@@ -1,5 +1,5 @@
 import logging
-from telegram import Update, ForceReply
+from telegram import Update, ForceReply, BotCommand
 from telegram.ext import ContextTypes, CommandHandler
 
 from src.handle.chatGptHKBU import chatgpt_handle
@@ -30,13 +30,14 @@ async def regenerate(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
     await chatgpt_handle(update, context)
 
 
-
 class CommandManager:
     commands = {
         start: "- Get command usage",
         clear: "- Clear your chat history.",
         regenerate: '- Regenerate last response.',
-        img: "[prompt] - Generate a image with Stable Diffusion."
+        img: BotCommand("img", "Generate a image with Stable Diffusion.", api_kwargs={
+            "prompt": "Prompt"
+        })
     }
 
     @classmethod
@@ -55,9 +56,12 @@ class CommandManager:
     def getCommandList(cls):
         result = []
         for command, description in cls.commands.items():
-            result.append((
-                command.__name__, description
-            ))
+            if isinstance(description, str):
+                result.append((
+                    command.__name__, description
+                ))
+            else:
+                result.append(description)
         return result
 
 
