@@ -5,6 +5,7 @@ from telegram.ext import ContextTypes, CommandHandler
 from src.handle.chatGptHKBU import chatgpt_handle
 from src.handle.chatHistory import historyWrapper
 from src.handle.stableDiffusion import img
+from src.util.accessControl import accessWrapper
 from src.util.websocketServer import ClientManager
 
 
@@ -42,7 +43,7 @@ class CommandManager:
         clear: "- Clear your chat history.",
         regenerate: '- Regenerate last response.',
         status: "- Get bot servant status.",
-        img: BotCommand("img", "Generate a image with Stable Diffusion.", api_kwargs={
+        accessWrapper(img): BotCommand("img", "Generate a image with Stable Diffusion.", api_kwargs={
             "prompt": "Prompt"
         })
     }
