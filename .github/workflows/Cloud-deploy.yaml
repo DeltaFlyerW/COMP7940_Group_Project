@@ -1,4 +1,4 @@
-name: render-deploy
+name: Cloud-deploy
 on:
   push:
     branches:

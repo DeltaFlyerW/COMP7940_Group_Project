@@ -1,7 +1,8 @@
+setuptools
 pony
 python-telegram-bot
 httpx
 websockets
 jsonpickle
 pillow
-psycopg2
+psycopg2-binary
