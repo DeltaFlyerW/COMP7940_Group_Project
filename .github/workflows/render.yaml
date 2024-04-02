@@ -1,13 +1,26 @@
 name: render-deploy
-run-name: Deploy to render
-on: 
+on:
   push:
     branches:
-      - main
+      - main  # or any branch you want to deploy from
 
 jobs:
   deploy:
-    name: Deploy app
-    runs-on: ubuntu-latest
-    concurrency: deploy-group    # optional: ensure only one action runs at a time
+    runs-on: self-hosted  # Make sure this matches your self-hosted runner's label
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: SSH and Deploy
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          script: |
+            cd /home/docker_deploy/COMP7940_Group_Project
+            git pull
+            docker compose down
+            docker rmi -f parkerint64/chatbot_servant_server
+            docker rmi -f parkerint64/chatbot_master_server
+            docker compose up --build -d
