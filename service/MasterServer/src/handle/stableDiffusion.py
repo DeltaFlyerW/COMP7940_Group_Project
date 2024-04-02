@@ -38,10 +38,12 @@ def resize_image(image_bytes, max_length=256):
     return img_output.getvalue()
 
 
-@accessWrapper
 async def img(update: Update, context: ContextTypes.DEFAULT_TYPE, prompt=None, caption=None, batchSize=4):
     if not prompt:
         prompt = ','.join(context.args)
+    await context.bot.send_message(chat_id=update.effective_chat.id, text="Generating image...",
+                                   reply_to_message_id=update.effective_message.message_id)
+
     response = await ClientManager.dispatch("stable-diffusion",
                                             WebsocketEvent.DispatchJob("txt2img", {'prompt': prompt,
                                                                                    'batch_size': batchSize

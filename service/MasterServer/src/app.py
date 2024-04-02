@@ -41,7 +41,8 @@ def initApplication():
     tel_access_token = configManager.TelegramConfig.accessToken
 
     # Create the Application and pass it your bot's token.
-    application = Application.builder().token(tel_access_token).concurrent_updates(True).build()
+    application = Application.builder().token(tel_access_token).concurrent_updates(True) \
+        .read_timeout(30).write_timeout(30).build()
 
     # on different commands - answer in Telegram
     commandHandle.CommandManager.registerAll(application.add_handler)

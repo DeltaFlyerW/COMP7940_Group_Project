@@ -151,9 +151,9 @@ I'd recommend starting with local trails that are marked as 'easy'.
 Websites like AllTrails can help you find trails near you.
 Also, ensure you have the right gear, especially a good pair of hiking shoes. Happy hiking! 🌲
 
-Caption: In case you're feeling adventurous, here's a little inspiration for you.
 ```json
-{"portrait":"18, female, long curly hair, smiling, casual jacket","emotion":"inspired, adventurous, ready",
+{"caption":"In case you're feeling adventurous, here's a little inspiration for you.",
+"portrait":"18, female, long curly hair, smiling, casual jacket","emotion":"inspired, adventurous, ready",
 "background":"mountain, forest", "gesture": "climbing"}
 ```
 "
@@ -163,15 +163,12 @@ Caption: In case you're feeling adventurous, here's a little inspiration for you
     reply_msg: str = await ChatGPTDispatchClient.get().chat(history)  # Send the text to ChatGPT
     logging.info("[ChatGPT] Conversation:  %s", history)
     import re
-    regex = re.compile(r'```json\s+(\{"portrait.*?)```', re.DOTALL)
+    regex = re.compile(r'```json\s+(\{"caption.*?)```', re.DOTALL)
     promptDict = None
     caption = None
     if regex.search(reply_msg):
         try:
             promptDict = json.loads(regex.search(reply_msg).group(1))
-            caption = re.search(r"caption:(\s+.*?)\n", reply_msg)
-            reply_msg = reply_msg.replace(caption.group(0), '')
-            caption = caption.group(1)
         except:
             pass
         reply_msg = regex.sub('', reply_msg)
@@ -188,5 +185,7 @@ Caption: In case you're feeling adventurous, here's a little inspiration for you
                                    parse_mode='MarkdownV2')
 
     if promptDict:
+        if 'caption' in promptDict:
+            caption = promptDict.pop('caption')
         await img(update, context, prompt="portrait, " + ','.join(promptDict.values()),
                   caption=caption, batchSize=1)
